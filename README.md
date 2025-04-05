@@ -21,7 +21,7 @@ Initial version — under development.
 
 ## 🛠 Technologies Used
 
-- C / C++ / Java (based on your implementation)
+- C++ 
 - POSIX Threads / Synchronization Tools (Mutexes, Semaphores, etc.)
 
 ---
