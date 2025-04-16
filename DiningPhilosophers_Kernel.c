@@ -1,15 +1,9 @@
+#include <linux/module.h>
 #include <linux/kernel.h>
 #include <linux/kthread.h>
 #include <linux/delay.h>
-#include <linux/unistd.h>
 #include <linux/semaphore.h>
-#include <linux/module.h>
 #include <linux/init.h>
-#include <linux/syscalls.h>
-
-MODULE_LICENSE("GPL");
-MODULE_AUTHOR("Abdul Basit");
-MODULE_DESCRIPTION("Dining Philosophers Kernel Module");
 
 #define N 5
 #define THINKING 2
@@ -24,6 +18,8 @@ int phil[N] = {0, 1, 2, 3, 4};
 struct semaphore mutex;
 struct semaphore S[N];
 
+struct task_struct *thread_id[N];
+
 void test(int phnum);
 void take_fork(int phnum);
 void put_fork(int phnum);
@@ -33,97 +29,79 @@ void test(int phnum)
 {
     if (state[phnum] == HUNGRY && state[LEFT] != EATING && state[RIGHT] != EATING)
     {
-        // state that eating
         state[phnum] = EATING;
-
-        msleep(2);
-        printk("Philosopher %d takes fork %d and %d\n", phnum + 1, LEFT + 1, phnum + 1);
-        printk("Philosopher %d is Eating\n", phnum + 1);
-
-        // up(&S[phnum]) has no effect
-        // during takefork
-        // used to wake up hungry philosophers
-        // during putfork
+        printk(KERN_INFO "Philosopher %d takes fork %d and %d\n", phnum + 1, LEFT + 1, phnum + 1);
+        printk(KERN_INFO "Philosopher %d is Eating\n", phnum + 1);
         up(&S[phnum]);
     }
 }
 
-// take up chopsticks
 void take_fork(int phnum)
 {
     down(&mutex);
-
-    // state that hungry
     state[phnum] = HUNGRY;
-
-    printk("Philosopher %d is Hungry\n", phnum + 1);
-
-    // eat if neighbours are not eating
+    printk(KERN_INFO "Philosopher %d is Hungry\n", phnum + 1);
     test(phnum);
-
     up(&mutex);
-
-    // if unable to eat wait to be signalled
     down(&S[phnum]);
-
-    msleep(1);
 }
 
-// put down chopsticks
 void put_fork(int phnum)
 {
-
     down(&mutex);
-
-    // state that thinking
     state[phnum] = THINKING;
-
-    printk("Philosopher %d putting fork %d and %d down\n", phnum + 1, LEFT + 1, phnum + 1);
-    printk("Philosopher %d is thinking\n", phnum + 1);
-
+    printk(KERN_INFO "Philosopher %d putting fork %d and %d down\n", phnum + 1, LEFT + 1, phnum + 1);
+    printk(KERN_INFO "Philosopher %d is thinking\n", phnum + 1);
     test(LEFT);
     test(RIGHT);
-
     up(&mutex);
 }
 
 int philosopher(void *num)
 {
-    while (1)
+    int *i = (int *)num;
+    while (!kthread_should_stop())
     {
-
-        int *i = num;
-
-        msleep(1);
-
+        msleep(1000);
         take_fork(*i);
-
-        msleep(0);
-
+        msleep(1000);
         put_fork(*i);
     }
+    return 0;
 }
 
-SYSCALL_DEFINE0(DPP)
+static int __init dpp_init(void)
 {
     int i;
-    struct task_struct *thread_id[N];
-    // initialize the semaphores
     sema_init(&mutex, 1);
-
     for (i = 0; i < N; i++)
+    {
         sema_init(&S[i], 0);
+    }
 
     for (i = 0; i < N; i++)
     {
-        // create philosopher processes
-        thread_id[i] = kthread_create(philosopher, (void *)&phil[i], "philosopher_thread");
-        if (thread_id[i])
-            wake_up_process(thread_id[i]);
-        else
-            kthread_stop(thread_id[i]);
-        printk("Philosopher %d is thinking\n", i + 1);
+        thread_id[i] = kthread_run(philosopher, &phil[i], "Philosopher_%d", i);
+        printk(KERN_INFO "Philosopher %d is thinking\n", i + 1);
     }
 
     return 0;
 }
+
+static void __exit dpp_exit(void)
+{
+    int i;
+    for (i = 0; i < N; i++)
+    {
+        if (thread_id[i])
+            kthread_stop(thread_id[i]);
+    }
+    printk(KERN_INFO "Dining Philosophers Module Removed\n");
+}
+
+module_init(dpp_init);
+module_exit(dpp_exit);
+
+MODULE_LICENSE("GPL");
+MODULE_AUTHOR("Abdul Basit");
+MODULE_DESCRIPTION("Dining Philosophers Kernel Module");
