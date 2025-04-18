@@ -27,7 +27,7 @@ Initial version — under development.
 
 ## ▶️ How to Run
 
-To compile and run the kernel module:
+To compile, run, and remove the kernel module:
 
 1. **Compile the module:**
    ```bash
@@ -44,5 +44,15 @@ To compile and run the kernel module:
    dmesg | tail -n 20
    ```
 
-Make sure you have the necessary kernel headers and permissions to build and insert kernel modules.
+4. **Remove the kernel module when done:**
+   ```bash
+   sudo rmmod DiningPhilosophers_Kernel
+   ```
+
+5. **Verify removal via kernel logs:**
+   ```bash
+   dmesg | tail -n 20
+   ```
+
+
 
