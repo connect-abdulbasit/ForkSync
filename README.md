@@ -1,4 +1,3 @@
-
 # Dining Philosophers Problem
 
 This is a basic implementation of the classic **Dining Philosophers Problem**, a synchronization problem often used in Operating Systems to demonstrate concepts like mutexes, semaphores, and thread coordination.
@@ -41,7 +40,11 @@ To compile, run, and remove the kernel module:
 
 3. **Check the kernel logs for output:**
    ```bash
-   dmesg | tail -n 20
+   sudo dmesg | tail -n 20
+   ```
+
+   ```bash
+   sudo dmesg -w
    ```
 
 4. **Remove the kernel module when done:**

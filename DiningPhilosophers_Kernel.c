@@ -17,7 +17,6 @@ int phil[N] = {0, 1, 2, 3, 4};
 
 struct semaphore mutex;
 struct semaphore S[N];
-
 struct task_struct *thread_id[N];
 
 void test(int phnum);
