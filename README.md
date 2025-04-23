@@ -21,41 +21,91 @@ Initial version — under development.
 
 ## 🛠 Technologies Used
 
-- C++  
-- POSIX Threads / Synchronization Tools (Mutexes, Semaphores, etc.)
+- C (Linux Kernel Module)
+- Linux Kernel Threads
+- Synchronization Primitives (Semaphores)
+
+---
 
 ## ▶️ How to Run
 
-To compile, run, and remove the kernel module:
+### 1. **Compile the kernel module**
+```bash
+make
+```
 
-1. **Compile the module:**
-   ```bash
-   make
-   ```
+### 2. **Insert the kernel module**
+```bash
+sudo insmod DiningPhilosophers_Kernel.ko
+```
 
-2. **Insert the kernel module (requires superuser privileges):**
-   ```bash
-   sudo insmod DiningPhilosophers_Kernel.ko
-   ```
+### 3. **Check the kernel logs**
+```bash
+sudo dmesg | tail -n 20
+```
+### 4. **Check the runtime kernel logs**
+```bash
+sudo dmesg -w
+```
 
-3. **Check the kernel logs for output:**
-   ```bash
-   sudo dmesg | tail -n 20
-   ```
+### 5. **Remove the kernel module**
+```bash
+sudo rmmod DiningPhilosophers_Kernel
+```
 
-   ```bash
-   sudo dmesg -w
-   ```
+---
 
-4. **Remove the kernel module when done:**
-   ```bash
-   sudo rmmod DiningPhilosophers_Kernel
-   ```
+## 🛡️ Secure Boot: How to Sign the Module
 
-5. **Verify removal via kernel logs:**
-   ```bash
-   dmesg | tail -n 20
-   ```
+If you're on a system with **Secure Boot enabled**, you'll need to sign your kernel module before inserting it. Here's how:
 
+### ✅ Step 1: Create a Signing Key
 
+```bash
+cd ~/personal/os/Dining-Philosopher
 
+openssl req -new -x509 -newkey rsa:2048 -keyout MOK.priv -outform DER -out MOK.der -nodes -days 36500 -subj "/CN=My Own Kernel Module Key/"
+```
+
+- `MOK.priv`: Private key  
+- `MOK.der`: Public certificate to enroll into UEFI
+
+---
+
+### ✅ Step 2: Sign the Kernel Module
+
+Find the `sign-file` script:
+
+```bash
+find /usr/src/linux-headers-$(uname -r)/ -name sign-file
+```
+
+Then run:
+
+```bash
+sudo /usr/src/linux-headers-$(uname -r)/scripts/sign-file sha256 MOK.priv MOK.der DiningPhilosophers_Kernel.ko
+```
+
+---
+
+### ✅ Step 3: Enroll the Key into UEFI
+
+```bash
+sudo mokutil --import MOK.der
+sudo reboot
+```
+
+During reboot:
+
+1. A blue MOK manager screen will appear.
+2. Select **"Enroll MOK"**.
+3. Choose **"Continue"**, enter the password.
+4. System will reboot again with the key trusted.
+
+---
+
+### ✅ Step 4: Insert the Signed Module
+
+```bash
+sudo insmod DiningPhilosophers_Kernel.ko
+```
