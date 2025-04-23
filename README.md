@@ -62,7 +62,6 @@ If you're on a system with **Secure Boot enabled**, you'll need to sign your ker
 ### ✅ Step 1: Create a Signing Key
 
 ```bash
-cd ~/personal/os/Dining-Philosopher
 
 openssl req -new -x509 -newkey rsa:2048 -keyout MOK.priv -outform DER -out MOK.der -nodes -days 36500 -subj "/CN=My Own Kernel Module Key/"
 ```
