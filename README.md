@@ -1,110 +1,68 @@
-# Dining Philosophers Problem
+# ForkSync: Dining Philosophers in C
 
-This is a basic implementation of the classic **Dining Philosophers Problem**, a synchronization problem often used in Operating Systems to demonstrate concepts like mutexes, semaphores, and thread coordination.
+**ForkSync** is a C-based implementation of the classic **Dining Philosophers Problem**, a fundamental synchronization and concurrency challenge in operating systems.
 
-## 🧠 Project Overview
+## 🧠 About the Project
 
-The Dining Philosophers Problem illustrates the challenges of avoiding deadlock and ensuring resource sharing among multiple processes (philosophers) trying to access limited shared resources (forks/chopsticks).
+The Dining Philosophers problem illustrates the challenges of resource sharing, deadlocks, and synchronization in concurrent programming. This simulation uses semaphores (or mutexes) to manage access to shared resources (forks) between competing threads (philosophers).
 
-## 👥 Group Members
+## 📁 Structure
 
-This project is a group effort by the following members:
-
-- Abdul Basit (myself)
-- Taaha Khan  
-- Hani Ali  
-- Shayan Ahmed  
-
-## 🚧 Project Status
-
-Initial version — under development.
-
-## 🛠 Technologies Used
-
-- C (Linux Kernel Module)
-- Linux Kernel Threads
-- Synchronization Primitives (Semaphores)
-
----
-
-## ▶️ How to Run
-
-### 1. **Compile the kernel module**
-```bash
-make
 ```
 
-### 2. **Insert the kernel module**
-```bash
-sudo insmod DiningPhilosophers_Kernel.ko
-```
+ForkSync/
+├── fork\_sync.c        # Main source code
+├── Makefile           # Optional: compile script
+└── README.md          # Project documentation
 
-### 3. **Check the kernel logs**
-```bash
-sudo dmesg | tail -n 20
-```
-### 4. **Check the runtime kernel logs**
-```bash
-sudo dmesg -w
-```
+````
 
-### 5. **Remove the kernel module**
-```bash
-sudo rmmod DiningPhilosophers_Kernel
-```
+## ⚙️ How It Works
 
----
+- Each philosopher is represented by a thread.
+- Forks are represented using mutexes.
+- Philosophers alternate between **thinking** and **eating**.
+- To eat, a philosopher must acquire the left and right forks.
+- Synchronization logic prevents **deadlock** and **starvation**.
 
-## 🛡️ Secure Boot: How to Sign the Module
+## 🚀 Getting Started
 
-If you're on a system with **Secure Boot enabled**, you'll need to sign your kernel module before inserting it. Here's how:
-
-### ✅ Step 1: Create a Signing Key
+### Compile
 
 ```bash
+gcc fork_sync.c -lpthread -o forksync
+````
 
-openssl req -new -x509 -newkey rsa:2048 -keyout MOK.priv -outform DER -out MOK.der -nodes -days 36500 -subj "/CN=My Own Kernel Module Key/"
-```
-
-- `MOK.priv`: Private key  
-- `MOK.der`: Public certificate to enroll into UEFI
-
----
-
-### ✅ Step 2: Sign the Kernel Module
-
-Find the `sign-file` script:
+### Run
 
 ```bash
-find /usr/src/linux-headers-$(uname -r)/ -name sign-file
+./forksync
 ```
 
-Then run:
+## 🧪 Sample Output
 
-```bash
-sudo /usr/src/linux-headers-$(uname -r)/scripts/sign-file sha256 MOK.priv MOK.der DiningPhilosophers_Kernel.ko
+```
+Philosopher 1 is thinking...
+Philosopher 1 is hungry...
+Philosopher 1 picked up fork 1
+Philosopher 1 picked up fork 2
+Philosopher 1 is eating...
+...
 ```
 
----
+## 📚 Concepts Demonstrated
 
-### ✅ Step 3: Enroll the Key into UEFI
+* Mutex-based synchronization
+* Deadlock avoidance
+* Multi-threading in C (using `pthread`)
+* Classical OS problems
 
-```bash
-sudo mokutil --import MOK.der
-sudo reboot
-```
+## 🛠️ Technologies Used
 
-During reboot:
+* C (GCC)
+* POSIX Threads (`pthread`)
+* Standard Linux environment
 
-1. A blue MOK manager screen will appear.
-2. Select **"Enroll MOK"**.
-3. Choose **"Continue"**, enter the password.
-4. System will reboot again with the key trusted.
+## 📄 License
 
----
-
-### ✅ Step 4: Insert the Signed Module
-
-```bash
-sudo insmod DiningPhilosophers_Kernel.ko
-```
+This project is licensed under the MIT License. Feel free to use, modify, or share it.
